@@ -1,0 +1,817 @@
+<!-- templates/predictor/results.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Results - JEE College Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .header-section h1 {
+            color: #667eea;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .rank-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .info-card .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .info-card .value {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+        
+        .btn-back {
+            display: inline-block;
+            padding: 12px 30px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e0e0e0;
+        }
+        
+        .section-header h2 {
+            color: #333;
+            font-size: 1.8em;
+            margin: 0;
+        }
+        
+        .section-header .count-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .college-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        
+        .college-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            transform: translateY(-3px);
+        }
+        
+        .college-card.high-chance {
+            border-left: 6px solid #4CAF50;
+            background: linear-gradient(135deg, #f1f8f4 0%, #ffffff 100%);
+        }
+        
+        .college-card.good-chance {
+            border-left: 6px solid #2196F3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+        }
+        
+        .college-card.moderate-chance {
+            border-left: 6px solid #FF9800;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);
+        }
+        
+        .college-card.low-chance {
+            border-left: 6px solid #f44336;
+            background: linear-gradient(135deg, #ffebee 0%, #ffffff 100%);
+        }
+        
+        .college-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .college-title {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .college-name {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .program-name {
+            font-size: 1.1em;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .status-badge {
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.95em;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+        
+        .status-badge.high {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .status-badge.good {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .status-badge.moderate {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .status-badge.low {
+            background: #f44336;
+            color: white;
+        }
+        
+        .college-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .detail-label {
+            font-size: 0.85em;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .detail-value {
+            font-weight: 700;
+            color: #333;
+            font-size: 1.15em;
+        }
+        
+        .detail-value.highlight {
+            color: #667eea;
+        }
+        
+        .probability-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .probability-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .probability-label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .probability-value {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .probability-bar {
+            width: 100%;
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 1s ease-out;
+            border-radius: 10px;
+        }
+        
+        .probability-fill.high {
+            background: linear-gradient(90deg, #4CAF50 0%, #66BB6A 100%);
+        }
+        
+        .probability-fill.good {
+            background: linear-gradient(90deg, #2196F3 0%, #42A5F5 100%);
+        }
+        
+        .probability-fill.moderate {
+            background: linear-gradient(90deg, #FF9800 0%, #FFA726 100%);
+        }
+        
+        .probability-fill.low {
+            background: linear-gradient(90deg, #f44336 0%, #EF5350 100%);
+        }
+        
+        .rank-comparison {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .rank-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .rank-item .rank-label {
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .rank-item .rank-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .rank-divider {
+            width: 2px;
+            height: 40px;
+            background: #ddd;
+            margin: 0 20px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: #999;
+        }
+        
+        .empty-state h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        .empty-state p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .empty-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+        }
+        
+        .stat-box .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-box .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .header-section h1 {
+                font-size: 1.6em;
+            }
+            
+            .rank-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .college-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .college-name {
+                font-size: 1.2em;
+            }
+            
+            .rank-comparison {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .rank-divider {
+                width: 100%;
+                height: 2px;
+                margin: 0;
+            }
+        }
+        
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'index' %}" class="btn-back">← Back to Search</a>
+        
+        <div class="header-section">
+            <h1>🎯 Your College Predictions</h1>
+            <div class="rank-info">
+                <div class="info-card">
+                    <div class="label">Your JEE Rank</div>
+                    <div class="value">{{ rank }}</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Category</div>
+                    <div class="value">{{ category }}</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Total Options</div>
+                    <div class="value">{{ total_predictions }}</div>
+                </div>
+            </div>
+        </div>
+        
+        {% if high_chance or good_chance or moderate_chance or low_chance %}
+        <div class="stats-summary">
+            {% if high_chance %}
+            <div class="stat-box">
+                <div class="stat-value">{{ high_chance|length }}</div>
+                <div class="stat-label">High Chance</div>
+            </div>
+            {% endif %}
+            
+            {% if good_chance %}
+            <div class="stat-box">
+                <div class="stat-value">{{ good_chance|length }}</div>
+                <div class="stat-label">Good Chance</div>
+            </div>
+            {% endif %}
+            
+            {% if moderate_chance %}
+            <div class="stat-box">
+                <div class="stat-value">{{ moderate_chance|length }}</div>
+                <div class="stat-label">Moderate Chance</div>
+            </div>
+            {% endif %}
+            
+            {% if low_chance %}
+            <div class="stat-box">
+                <div class="stat-value">{{ low_chance|length }}</div>
+                <div class="stat-label">Low Chance</div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if high_chance %}
+        <div class="section">
+            <div class="section-header">
+                <h2>🟢 High Chance</h2>
+                <span class="count-badge">{{ high_chance|length }} Options</span>
+            </div>
+            
+            {% for pred in high_chance %}
+            <div class="college-card high-chance">
+                <div class="college-header">
+                    <div class="college-title">
+                        <div class="college-name">{{ pred.institute }}</div>
+                        <div class="program-name">{{ pred.program }}</div>
+                    </div>
+                    <span class="status-badge high">{{ pred.status }}</span>
+                </div>
+                
+                <div class="college-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Degree</span>
+                        <span class="detail-value">{{ pred.degree }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Opening Rank</span>
+                        <span class="detail-value">{{ pred.opening_rank }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Closing Rank</span>
+                        <span class="detail-value">{{ pred.closing_rank }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Quota</span>
+                        <span class="detail-value">{{ pred.quota }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Year</span>
+                        <span class="detail-value">{{ pred.year }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Round</span>
+                        <span class="detail-value">{{ pred.round }}</span>
+                    </div>
+                </div>
+                
+                <div class="probability-section">
+                    <div class="probability-header">
+                        <span class="probability-label">Admission Confidence</span>
+                        <span class="probability-value">{{ pred.confidence }}%</span>
+                    </div>
+                    <div class="probability-bar">
+                        <div class="probability-fill high" style="width: {{ pred.confidence }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="rank-comparison">
+                    <div class="rank-item">
+                        <div class="rank-label">Opening</div>
+                        <div class="rank-value">{{ pred.opening_rank }}</div>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-item">
+                        <div class="rank-label">Your Rank</div>
+                        <div class="rank-value highlight">{{ pred.your_rank }}</div>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-item">
+                        <div class="rank-label">Closing</div>
+                        <div class="rank-value">{{ pred.closing_rank }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if good_chance %}
+        <div class="section">
+            <div class="section-header">
+                <h2>🔵 Good Chance</h2>
+                <span class="count-badge">{{ good_chance|length }} Options</span>
+            </div>
+            
+            {% for pred in good_chance %}
+            <div class="college-card good-chance">
+                <div class="college-header">
+                    <div class="college-title">
+                        <div class="college-name">{{ pred.institute }}</div>
+                        <div class="program-name">{{ pred.program }}</div>
+                    </div>
+                    <span class="status-badge good">{{ pred.status }}</span>
+                </div>
+                
+                <div class="college-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Degree</span>
+                        <span class="detail-value">{{ pred.degree }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Opening Rank</span>
+                        <span class="detail-value">{{ pred.opening_rank }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Closing Rank</span>
+                        <span class="detail-value">{{ pred.closing_rank }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Quota</span>
+                        <span class="detail-value">{{ pred.quota }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Year</span>
+                        <span class="detail-value">{{ pred.year }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Round</span>
+                        <span class="detail-value">{{ pred.round }}</span>
+                    </div>
+                </div>
+                
+                <div class="probability-section">
+                    <div class="probability-header">
+                        <span class="probability-label">Admission Confidence</span>
+                        <span class="probability-value">{{ pred.confidence }}%</span>
+                    </div>
+                    <div class="probability-bar">
+                        <div class="probability-fill good" style="width: {{ pred.confidence }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="rank-comparison">
+                    <div class="rank-item">
+                        <div class="rank-label">Opening</div>
+                        <div class="rank-value">{{ pred.opening_rank }}</div>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-item">
+                        <div class="rank-label">Your Rank</div>
+                        <div class="rank-value highlight">{{ pred.your_rank }}</div>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-item">
+                        <div class="rank-label">Closing</div>
+                        <div class="rank-value">{{ pred.closing_rank }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if moderate_chance %}
+        <div class="section">
+            <div class="section-header">
+                <h2>🟡 Moderate Chance</h2>
+                <span class="count-badge">{{ moderate_chance|length }} Options</span>
+            </div>
+            
+            {% for pred in moderate_chance %}
+            <div class="college-card moderate-chance">
+                <div class="college-header">
+                    <div class="college-title">
+                        <div class="college-name">{{ pred.institute }}</div>
+                        <div class="program-name">{{ pred.program }}</div>
+                    </div>
+                    <span class="status-badge moderate">{{ pred.status }}</span>
+                </div>
+                
+                <div class="college-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Degree</span>
+                        <span class="detail-value">{{ pred.degree }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Opening Rank</span>
+                        <span class="detail-value">{{ pred.opening_rank }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Closing Rank</span>
+                        <span class="detail-value">{{ pred.closing_rank }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Quota</span>
+                        <span class="detail-value">{{ pred.quota }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Year</span>
+                        <span class="detail-value">{{ pred.year }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Round</span>
+                        <span class="detail-value">{{ pred.round }}</span>
+                    </div>
+                </div>
+                
+                <div class="probability-section">
+                    <div class="probability-header">
+                        <span class="probability-label">Admission Confidence</span>
+                        <span class="probability-value">{{ pred.confidence }}%</span>
+                    </div>
+                    <div class="probability-bar">
+                        <div class="probability-fill moderate" style="width: {{ pred.confidence }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="rank-comparison">
+                    <div class="rank-item">
+                        <div class="rank-label">Opening</div>
+                        <div class="rank-value">{{ pred.opening_rank }}</div>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-item">
+                        <div class="rank-label">Your Rank</div>
+                        <div class="rank-value highlight">{{ pred.your_rank }}</div>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-item">
+                        <div class="rank-label">Closing</div>
+                        <div class="rank-value">{{ pred.closing_rank }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if low_chance %}
+        <div class="section">
+            <div class="section-header">
+                <h2>🔴 Low Chance</h2>
+                <span class="count-badge">{{ low_chance|length }} Options</span>
+            </div>
+            
+            {% for pred in low_chance %}
+            <div class="college-card low-chance">
+                <div class="college-header">
+                    <div class="college-title">
+                        <div class="college-name">{{ pred.institute }}</div>
+                        <div class="program-name">{{ pred.program }}</div>
+                    </div>
+                    <span class="status-badge low">{{ pred.status }}</span>
+                </div>
+                
+                <div class="college-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Degree</span>
+                        <span class="detail-value">{{ pred.degree }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Opening Rank</span>
+                        <span class="detail-value">{{ pred.opening_rank }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Closing Rank</span>
+                        <span class="detail-value">{{ pred.closing_rank }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Quota</span>
+                        <span class="detail-value">{{ pred.quota }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Year</span>
+                        <span class="detail-value">{{ pred.year }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Round</span>
+                        <span class="detail-value">{{ pred.round }}</span>
+                    </div>
+                </div>
+                
+                <div class="probability-section">
+                    <div class="probability-header">
+                        <span class="probability-label">Admission Confidence</span>
+                        <span class="probability-value">{{ pred.confidence }}%</span>
+                    </div>
+                    <div class="probability-bar">
+                        <div class="probability-fill low" style="width: {{ pred.confidence }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="rank-comparison">
+                    <div class="rank-item">
+                        <div class="rank-label">Opening</div>
+                        <div class="rank-value">{{ pred.opening_rank }}</div>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-item">
+                        <div class="rank-label">Your Rank</div>
+                        <div class="rank-value highlight">{{ pred.your_rank }}</div>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-item">
+                        <div class="rank-label">Closing</div>
+                        <div class="rank-value">{{ pred.closing_rank }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if not high_chance and not good_chance and not moderate_chance and not low_chance %}
+        <div class="section">
+            <div class="empty-state">
+                <div class="empty-icon">😔</div>
+                <h2>No Strong Matches Found</h2>
+                <p>Based on your rank <strong>{{ rank }}</strong> and category <strong>{{ category }}</strong>,</p>
+                <p>we couldn't find colleges with high admission probability in our database.</p>
+                <p>Consider:</p>
+                <p>• Adjusting your filters to see more options</p>
+                <p>• Looking at other college categories</p>
+                <p>• Preparing for improvement in next attempt</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="section" style="text-align: center; padding: 30px;">
+            <a href="{% url 'index' %}" class="btn-back">🔍 Try Another Search</a>
+        </div>
+    </div>
+    
+    <script>
+        // Animate probability bars on load
+        window.addEventListener('load', function() {
+            const fills = document.querySelectorAll('.probability-fill');
+            fills.forEach(fill => {
+                const width = fill.style.width;
+                fill.style.width = '0%';
+                setTimeout(() => {
+                    fill.style.width = width;
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>
