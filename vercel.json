@@ -5,10 +5,8 @@
       "src": "project/wsgi.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.12",
-        "installCommand": "pip install -r requirements.txt",
-        "python": { "useRuntime": true }
+        "maxLambdaSize": "250mb",
+        "runtime": "python3.12"
       }
     }
   ],
@@ -26,5 +24,11 @@
       "src": "/(.*)",
       "dest": "project/wsgi.py"
     }
-  ]
+  ],
+  "functions": {
+    "project/wsgi.py": {
+      "memory": 3008,
+      "maxDuration": 60
+    }
+  }
 }
