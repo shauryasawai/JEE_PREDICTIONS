@@ -248,44 +248,44 @@ class JEEPredictor:
         print(f"Model loaded from {model_path}")
 
 
-# Training script
-if __name__ == "__main__":
-    import sys
+# # Training script
+# if __name__ == "__main__":
+#     import sys
     
-    # Load your data
-    try:
-        predictor = JEEPredictor()
-        data = predictor.load_csv('jee_admissions_data.csv')
-    except FileNotFoundError:
-        print("Error: jee_admissions_data.csv not found!")
-        sys.exit(1)
+#     # Load your data
+#     try:
+#         predictor = JEEPredictor()
+#         data = predictor.load_csv('jee_admissions_data.csv')
+#     except FileNotFoundError:
+#         print("Error: jee_admissions_data.csv not found!")
+#         sys.exit(1)
     
-    print("Starting JEE Predictor Training...")
-    print(f"Total records: {len(data)}")
+#     print("Starting JEE Predictor Training...")
+#     print(f"Total records: {len(data)}")
     
-    # Initialize and train model
-    accuracy = predictor.train_model(data)
+#     # Initialize and train model
+#     accuracy = predictor.train_model(data)
     
-    # Save the model
-    predictor.save_model('jee_predictor_model.pkl')
+#     # Save the model
+#     predictor.save_model('jee_predictor_model.pkl')
     
-    # Test prediction
-    print("\n" + "="*80)
-    print("EXAMPLE PREDICTIONS")
-    print("="*80)
+#     # Test prediction
+#     print("\n" + "="*80)
+#     print("EXAMPLE PREDICTIONS")
+#     print("="*80)
     
-    test_rank = 1500
-    test_category = "GEN"
+#     test_rank = 1500
+#     test_category = "GEN"
     
-    print(f"\nPredicting colleges for Rank: {test_rank}, Category: {test_category}")
-    predictions = predictor.predict_colleges(
-        rank=test_rank,
-        category=test_category
-    )
+#     print(f"\nPredicting colleges for Rank: {test_rank}, Category: {test_category}")
+#     predictions = predictor.predict_colleges(
+#         rank=test_rank,
+#         category=test_category
+#     )
     
-    print(f"\nTotal predictions: {len(predictions)}")
-    print(f"\nTop 10 Predictions:")
-    for i, pred in enumerate(predictions[:10], 1):
-        print(f"\n{i}. {pred['institute']} - {pred['program']}")
-        print(f"   Status: {pred['status']} ({pred['confidence']}% confidence)")
-        print(f"   Opening: {pred['opening_rank']}, Closing: {pred['closing_rank']}")
+#     print(f"\nTotal predictions: {len(predictions)}")
+#     print(f"\nTop 10 Predictions:")
+#     for i, pred in enumerate(predictions[:10], 1):
+#         print(f"\n{i}. {pred['institute']} - {pred['program']}")
+#         print(f"   Status: {pred['status']} ({pred['confidence']}% confidence)")
+#         print(f"   Opening: {pred['opening_rank']}, Closing: {pred['closing_rank']}")

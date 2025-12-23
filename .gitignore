@@ -3,3 +3,5 @@
 __pycache__/
 .env
 /credentials
+*.sqlite3
+data
