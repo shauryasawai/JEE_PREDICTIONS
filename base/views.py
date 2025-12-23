@@ -4,6 +4,10 @@ import json
 import os
 import warnings
 import traceback
+import joblib
+import requests
+from io import BytesIO
+from functools import lru_cache
 from .jee_predictor import JEEPredictor
 
 # Suppress sklearn warnings
@@ -11,24 +15,60 @@ warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
 
 # Initialize predictor globally
 predictor = None
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'jee_predictor_model.pkl')
+
+# Model URL from GitHub Release
+MODEL_URL = os.environ.get(
+    'MODEL_URL',
+    'https://github.com/shauryasawai/JEE_PREDICTIONS/releases/download/v1.0.0-JEE_prediction/jee_predictor_model.pkl'
+)
+
+@lru_cache(maxsize=1)
+def download_and_load_model():
+    """
+    Download model from GitHub release and cache it in memory
+    This function is called once and cached for subsequent requests
+    """
+    try:
+        print(f"Downloading model from: {MODEL_URL}")
+        response = requests.get(MODEL_URL, timeout=60)
+        response.raise_for_status()
+        
+        print("Model downloaded, loading into memory...")
+        model_data = joblib.load(BytesIO(response.content))
+        print("Model loaded successfully!")
+        return model_data
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading model: {e}")
+        traceback.print_exc()
+        raise Exception(f"Failed to download model from {MODEL_URL}: {str(e)}")
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        traceback.print_exc()
+        raise Exception(f"Failed to load model: {str(e)}")
 
 def load_predictor():
-    """Load the predictor model"""
+    """Load the predictor model from external URL"""
     global predictor
     if predictor is None:
-        predictor = JEEPredictor()
         try:
-            if os.path.exists(MODEL_PATH):
-                print(f"Loading model from: {MODEL_PATH}")
-                predictor.load_model(MODEL_PATH)
-                print("Model loaded successfully!")
-            else:
-                print(f"ERROR: Model file not found at {MODEL_PATH}")
-                print("Please run training script first!")
-                return False
+            print("Initializing predictor...")
+            predictor = JEEPredictor()
+            
+            # Download and load model from GitHub
+            model_data = download_and_load_model()
+            
+            # Load the model data into predictor
+            predictor.model = model_data.get('model')
+            predictor.institutes_data = model_data.get('institutes_data')
+            predictor.scaler = model_data.get('scaler')
+            
+            if predictor.institutes_data is None:
+                raise Exception("Model data is corrupted or incomplete")
+            
+            print(f"Predictor loaded with {len(predictor.institutes_data)} records")
+            return True
         except Exception as e:
-            print(f"Error loading model: {e}")
+            print(f"Error initializing predictor: {e}")
             traceback.print_exc()
             return False
     return True
@@ -45,7 +85,7 @@ def index(request):
     if not predictor or predictor.institutes_data is None:
         return render(request, 'error.html', {
             'error': 'Model not loaded. Please contact administrator.',
-            'details': f'Model path: {MODEL_PATH}'
+            'details': f'Model URL: {MODEL_URL}'
         })
     
     context = {
@@ -297,8 +337,7 @@ def test(request):
     info = {
         'model_loaded': predictor is not None,
         'data_loaded': predictor.institutes_data is not None if predictor else False,
-        'model_path': MODEL_PATH,
-        'model_exists': os.path.exists(MODEL_PATH),
+        'model_url': MODEL_URL,
     }
     
     if predictor and predictor.institutes_data is not None:
