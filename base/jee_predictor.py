@@ -1,4 +1,4 @@
-import pandas as pd
+import csv
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
@@ -11,7 +11,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
 
 class JEEPredictor:
     """
-    Optimized ML Model for predicting colleges based on JEE rank
+    Optimized ML Model for predicting colleges based on JEE rank (without pandas)
     """
     
     def __init__(self):
@@ -20,11 +20,22 @@ class JEEPredictor:
         self.feature_columns = []
         self.institutes_data = None
         
-    def preprocess_data(self, df):
+    def load_csv(self, filepath):
+        """
+        Load CSV file without pandas
+        """
+        data = []
+        with open(filepath, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                data.append(row)
+        return data
+    
+    def preprocess_data(self, data):
         """
         Preprocess the JEE admissions data
         """
-        data = df.copy()
+        processed_data = [row.copy() for row in data]
         
         # Encode categorical variables
         categorical_cols = ['institute_type', 'quota', 'pool', 'institute_short', 
@@ -33,25 +44,30 @@ class JEEPredictor:
         for col in categorical_cols:
             if col not in self.label_encoders:
                 self.label_encoders[col] = LabelEncoder()
-                data[f'{col}_encoded'] = self.label_encoders[col].fit_transform(data[col].astype(str))
-            else:
-                data[f'{col}_encoded'] = self.label_encoders[col].transform(data[col].astype(str))
+                values = [str(row.get(col, '')) for row in data]
+                self.label_encoders[col].fit(values)
+            
+            values = [str(row.get(col, '')) for row in data]
+            encoded_values = self.label_encoders[col].transform(values)
+            
+            for i, row in enumerate(processed_data):
+                row[f'{col}_encoded'] = encoded_values[i]
         
-        return data
+        return processed_data
     
-    def prepare_training_data(self, df):
+    def prepare_training_data(self, data):
         """
         Prepare data for model training - OPTIMIZED VERSION
         """
-        processed_df = self.preprocess_data(df)
-        self.institutes_data = df.copy()
+        processed_data = self.preprocess_data(data)
+        self.institutes_data = [row.copy() for row in data]
         
         training_samples = []
         
         # Reduced sampling for faster training
-        for idx, row in processed_df.iterrows():
-            opening_rank = row['opening_rank']
-            closing_rank = row['closing_rank']
+        for row in processed_data:
+            opening_rank = int(row['opening_rank'])
+            closing_rank = int(row['closing_rank'])
             
             # Create fewer samples per program (3 instead of 7)
             # Within range - admitted
@@ -82,21 +98,22 @@ class JEEPredictor:
                     'admitted': 0
                 })
         
-        return pd.DataFrame(training_samples)
+        return training_samples
     
-    def train_model(self, df):
+    def train_model(self, data):
         """
         Train the admission prediction model - OPTIMIZED
         """
         print("Preparing training data...")
-        training_data = self.prepare_training_data(df)
+        training_samples = self.prepare_training_data(data)
         
         self.feature_columns = ['rank', 'category_encoded', 'institute_type_encoded', 
                                'quota_encoded', 'pool_encoded', 'target_institute', 
                                'target_program']
         
-        X = training_data[self.feature_columns]
-        y = training_data['admitted']
+        # Convert to lists for sklearn
+        X = [[sample[col] for col in self.feature_columns] for sample in training_samples]
+        y = [sample['admitted'] for sample in training_samples]
         
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42, stratify=y
@@ -139,17 +156,18 @@ class JEEPredictor:
         
         # Apply preferences filter
         if preferences:
-            for key, value in preferences.items():
-                if key in filtered_data.columns and value:
-                    filtered_data = filtered_data[filtered_data[key] == value]
+            filtered_data = [
+                row for row in filtered_data
+                if all(row.get(key) == value for key, value in preferences.items() if value)
+            ]
         
         # Filter by category
-        filtered_data = filtered_data[filtered_data['category'] == category]
+        filtered_data = [row for row in filtered_data if row.get('category') == category]
         
         print(f"Found {len(filtered_data)} matching programs")
         
         # Process each college-branch combination
-        for idx, row in filtered_data.iterrows():
+        for row in filtered_data:
             opening_rank = int(row['opening_rank'])
             closing_rank = int(row['closing_rank'])
             
@@ -236,17 +254,17 @@ if __name__ == "__main__":
     
     # Load your data
     try:
-        df = pd.read_csv('jee_admissions_data.csv')
+        predictor = JEEPredictor()
+        data = predictor.load_csv('jee_admissions_data.csv')
     except FileNotFoundError:
         print("Error: jee_admissions_data.csv not found!")
         sys.exit(1)
     
     print("Starting JEE Predictor Training...")
-    print(f"Total records: {len(df)}")
+    print(f"Total records: {len(data)}")
     
     # Initialize and train model
-    predictor = JEEPredictor()
-    accuracy = predictor.train_model(df)
+    accuracy = predictor.train_model(data)
     
     # Save the model
     predictor.save_model('jee_predictor_model.pkl')
