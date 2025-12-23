@@ -18,9 +18,21 @@ predictor = None
 
 # Model URL from GitHub Release
 MODEL_URL = os.environ.get(
-    'MODEL_URL',
-    'https://github.com/shauryasawai/JEE_PREDICTIONS/releases/download/v1.0.0-JEE_prediction/jee_predictor_model.pkl'
+    "MODEL_URL",
+    "https://github.com/shauryasawai/JEE_PREDICTIONS/releases/download/v1.0.0-JEE_prediction/jee_predictor_model.pkl"
 )
+
+MODEL_PATH = "jee_predictor_model.pkl"
+
+def load_model():
+    if not os.path.exists(MODEL_PATH):
+        print("Downloading ML model...")
+        r = requests.get(MODEL_URL, timeout=60)
+        r.raise_for_status()
+        with open(MODEL_PATH, "wb") as f:
+            f.write(r.content)
+
+    return joblib.load(MODEL_PATH)
 
 @lru_cache(maxsize=1)
 def download_and_load_model():
