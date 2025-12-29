@@ -17,11 +17,156 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            padding-top: 90px;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
+        }
+        
+        /* Floating Navigation Bar */
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-bar::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .nav-bar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .nav-bar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+        
+        .nav-item {
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border: 2px solid transparent;
+        }
+        
+        .nav-item.home {
+            background: #667eea;
+            color: white;
+        }
+        
+        .nav-item.home:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+        
+        .nav-item.high {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #4CAF50;
+        }
+        
+        .nav-item.high:hover {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .nav-item.good {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-color: #2196F3;
+        }
+        
+        .nav-item.good:hover {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .nav-item.moderate {
+            background: #fff3e0;
+            color: #e65100;
+            border-color: #FF9800;
+        }
+        
+        .nav-item.moderate:hover {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .nav-item.low {
+            background: #ffebee;
+            color: #c62828;
+            border-color: #f44336;
+        }
+        
+        .nav-item.low:hover {
+            background: #f44336;
+            color: white;
+        }
+        
+        .nav-divider {
+            width: 2px;
+            height: 30px;
+            background: #e0e0e0;
+        }
+        
+        /* Scroll Buttons */
+        .scroll-buttons {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 999;
+        }
+        
+        .scroll-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            color: #667eea;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .scroll-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .scroll-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .scroll-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
         
         .header-section {
@@ -91,6 +236,7 @@
             padding: 30px;
             margin-bottom: 25px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            scroll-margin-top: 90px;
         }
         
         .section-header {
@@ -388,6 +534,20 @@
         }
         
         @media (max-width: 768px) {
+            body {
+                padding-top: 100px;
+            }
+            
+            .nav-bar {
+                padding: 10px 15px;
+                gap: 8px;
+            }
+            
+            .nav-item {
+                padding: 8px 16px;
+                font-size: 0.85em;
+            }
+            
             .header-section h1 {
                 font-size: 1.6em;
             }
@@ -414,6 +574,17 @@
                 height: 2px;
                 margin: 0;
             }
+            
+            .scroll-buttons {
+                right: 15px;
+                bottom: 15px;
+            }
+            
+            .scroll-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3em;
+            }
         }
         
         .loading {
@@ -427,10 +598,34 @@
     </style>
 </head>
 <body>
+    <!-- Floating Navigation Bar -->
+    <nav class="nav-bar">
+        <a href="{% url 'index' %}" class="nav-item home">🏠 Home</a>
+        <div class="nav-divider"></div>
+        {% if high_chance %}
+        <a href="#high-chance-section" class="nav-item high">🟢 High ({{ high_chance|length }})</a>
+        {% endif %}
+        {% if good_chance %}
+        <a href="#good-chance-section" class="nav-item good">🔵 Good ({{ good_chance|length }})</a>
+        {% endif %}
+        {% if moderate_chance %}
+        <a href="#moderate-chance-section" class="nav-item moderate">🟡 Moderate ({{ moderate_chance|length }})</a>
+        {% endif %}
+        {% if low_chance %}
+        <a href="#low-chance-section" class="nav-item low">🔴 Low ({{ low_chance|length }})</a>
+        {% endif %}
+    </nav>
+
+    <!-- Scroll Buttons -->
+    <div class="scroll-buttons">
+        <button class="scroll-btn" id="scrollTop" title="Scroll to Top">↑</button>
+        <button class="scroll-btn" id="scrollBottom" title="Scroll to Bottom">↓</button>
+    </div>
+
     <div class="container">
         <a href="{% url 'index' %}" class="btn-back">← Back to Search</a>
         
-        <div class="header-section">
+        <div class="header-section" id="top">
             <h1>🎯 Your College Predictions</h1>
             <div class="rank-info">
                 <div class="info-card">
@@ -481,7 +676,7 @@
         {% endif %}
         
         {% if high_chance %}
-        <div class="section">
+        <div class="section" id="high-chance-section">
             <div class="section-header">
                 <h2>🟢 High Chance</h2>
                 <span class="count-badge">{{ high_chance|length }} Options</span>
@@ -512,7 +707,7 @@
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Quota</span>
-                        <span class="detail-value">{{ pred.quota }}</span>
+                        <span class="detail-value">{% if pred.quota == 'AI' %}All India{% elif pred.quota == 'HS' %}Home State{% else %}{{ pred.quota }}{% endif %}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Year</span>
@@ -556,7 +751,7 @@
         {% endif %}
         
         {% if good_chance %}
-        <div class="section">
+        <div class="section" id="good-chance-section">
             <div class="section-header">
                 <h2>🔵 Good Chance</h2>
                 <span class="count-badge">{{ good_chance|length }} Options</span>
@@ -587,7 +782,7 @@
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Quota</span>
-                        <span class="detail-value">{{ pred.quota }}</span>
+                        <span class="detail-value">{% if pred.quota == 'AI' %}All India{% elif pred.quota == 'HS' %}Home State{% else %}{{ pred.quota }}{% endif %}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Year</span>
@@ -631,7 +826,7 @@
         {% endif %}
         
         {% if moderate_chance %}
-        <div class="section">
+        <div class="section" id="moderate-chance-section">
             <div class="section-header">
                 <h2>🟡 Moderate Chance</h2>
                 <span class="count-badge">{{ moderate_chance|length }} Options</span>
@@ -662,7 +857,7 @@
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Quota</span>
-                        <span class="detail-value">{{ pred.quota }}</span>
+                        <span class="detail-value">{% if pred.quota == 'AI' %}All India{% elif pred.quota == 'HS' %}Home State{% else %}{{ pred.quota }}{% endif %}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Year</span>
@@ -706,7 +901,7 @@
         {% endif %}
         
         {% if low_chance %}
-        <div class="section">
+        <div class="section" id="low-chance-section">
             <div class="section-header">
                 <h2>🔴 Low Chance</h2>
                 <span class="count-badge">{{ low_chance|length }} Options</span>
@@ -737,7 +932,7 @@
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Quota</span>
-                        <span class="detail-value">{{ pred.quota }}</span>
+                        <span class="detail-value">{% if pred.quota == 'AI' %}All India{% elif pred.quota == 'HS' %}Home State{% else %}{{ pred.quota }}{% endif %}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Year</span>
@@ -795,7 +990,7 @@
         </div>
         {% endif %}
         
-        <div class="section" style="text-align: center; padding: 30px;">
+        <div class="section" style="text-align: center; padding: 30px;" id="bottom">
             <a href="{% url 'index' %}" class="btn-back">🔍 Try Another Search</a>
         </div>
     </div>
@@ -812,6 +1007,58 @@
                 }, 100);
             });
         });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('.nav-item:not(.home)').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Scroll to top button
+        document.getElementById('scrollTop').addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Scroll to bottom button
+        document.getElementById('scrollBottom').addEventListener('click', function() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        });
+
+        // Show/hide scroll buttons based on scroll position
+        function updateScrollButtons() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight;
+            const clientHeight = document.documentElement.clientHeight;
+            
+            const topBtn = document.getElementById('scrollTop');
+            const bottomBtn = document.getElementById('scrollBottom');
+            
+            // Show top button when scrolled down
+            if (scrollTop > 300) {
+                topBtn.classList.remove('hidden');
+            } else {
+                topBtn.classList.add('hidden');
+            }
+            
+            // Hide bottom button when near bottom
+            if (scrollTop + clientHeight >= scrollHeight - 100) {
+                bottomBtn.classList.add('hidden');
+            } else {
+                bottomBtn.classList.remove('hidden');
+            }
+        }
+
+        // Update button visibility on scroll
+        window.addEventListener('scroll', updateScrollButtons);
+        
+        // Initial check
+        updateScrollButtons();
     </script>
 </body>
 </html>
