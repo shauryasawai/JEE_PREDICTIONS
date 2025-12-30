@@ -20,7 +20,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -49,6 +49,25 @@
             padding: 40px;
         }
         
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
         .form-group {
             margin-bottom: 25px;
         }
@@ -61,6 +80,10 @@
             font-size: 1em;
         }
         
+        .required {
+            color: #e74c3c;
+        }
+        
         .form-group input,
         .form-group select {
             width: 100%;
@@ -69,6 +92,7 @@
             border-radius: 8px;
             font-size: 1em;
             transition: all 0.3s;
+            background: white;
         }
         
         .form-group input:focus,
@@ -78,26 +102,31 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
+        .form-group select {
+            cursor: pointer;
+        }
+        
         .filter-section {
             background: #f8f9fa;
-            padding: 20px;
+            padding: 25px;
             border-radius: 10px;
             margin-bottom: 25px;
         }
         
         .filter-section h3 {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: #667eea;
+            border-bottom: none;
         }
         
         .btn-predict {
             width: 100%;
-            padding: 15px;
+            padding: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 1.2em;
+            font-size: 1.3em;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
@@ -115,14 +144,39 @@
         .info-box {
             background: #e3f2fd;
             border-left: 4px solid #2196F3;
-            padding: 15px;
-            margin-bottom: 25px;
+            padding: 20px;
+            margin-bottom: 30px;
             border-radius: 5px;
         }
         
         .info-box p {
-            margin: 5px 0;
+            margin: 8px 0;
             color: #1565C0;
+            line-height: 1.6;
+        }
+        
+        .info-box strong {
+            color: #0d47a1;
+        }
+        
+        .quota-info {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+        
+        .quota-info p {
+            margin: 5px 0;
+            color: #e65100;
+        }
+        
+        .help-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
         }
         
         .footer {
@@ -140,55 +194,91 @@
             .form-container {
                 padding: 20px;
             }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎓 JEE College Predictor</h1>
-            <p>Find your best college and branch options based on your JEE rank</p>
+            <h1>🎓 JEE Mains College Predictor</h1>
+            <p>Find your best college and branch options based on your JEE Mains rank</p>
         </div>
         
         <div class="form-container">
             <div class="info-box">
-                <p><strong>How it works:</strong></p>
-                <p>Enter your JEE rank and category to get personalized college and branch predictions based on previous year's admission data.</p>
+                <p><strong>🎯 How it works:</strong></p>
+                <p>Enter your JEE Mains category rank, gender, and home state to get personalized college predictions.</p>                
+                <div class="quota-info">
+                    <p><strong>📌 Important:</strong></p>
+                    <p>• <strong>AI (All India)</strong> - Open to all students across India</p>
+                    <p>• <strong>HS (Home State)</strong> - Reserved for students from that state</p>
+                    <p>• Female students can apply to both Gender-Neutral and Female-only seats</p>
+                </div>
             </div>
             
             <form method="POST" action="{% url 'predict' %}">
                 {% csrf_token %}
                 
-                <div class="form-group">
-                    <label for="rank">Your JEE Rank *</label>
-                    <input type="number" id="rank" name="rank" min="1" max="500000" 
-                           placeholder="Enter your JEE rank" required>
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3>📋 Basic Information</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rank">Your JEE Category Rank <span class="required">*</span></label>
+                            <input type="number" id="rank" name="rank" min="1" max="500000" 
+                                   placeholder="e.g., 5000" required>
+                            <div class="help-text">Enter your category-specific rank (not CRL)</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category">Category / Seat Type <span class="required">*</span></label>
+                            <select id="category" name="category" required>
+                                <option value="">Select your category</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="help-text">OPEN = General category</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gender">Gender <span class="required">*</span></label>
+                            <select id="gender" name="gender" required>
+                                <option value="">Select gender</option>
+                                {% for g in genders %}
+                                <option value="{{ g }}">{{ g }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="help-text">Females can access more seat options</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="home_state">Home State <span class="required">*</span></label>
+                            <select id="home_state" name="home_state" required>
+                                <option value="none">No Home State / Outside India</option>
+                                {% for state in states %}
+                                <option value="{{ state }}">{{ state }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="help-text">For Home State (HS) quota eligibility</div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="category">Category *</label>
-                    <select id="category" name="category" required>
-                        <option value="">Select your category</option>
-                        {% for cat in categories %}
-                        <option value="{{ cat }}">{{ cat }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="pool">Gender Pool *</label>
-                    <select id="pool" name="pool" required>
-                        <option value="">Select gender pool</option>
-                        <option value="Gender-Neutral">Gender-Neutral</option>
-                        <option value="Female-only (including Supernumerary)">Female-only</option>
-                    </select>
-                </div>
-                
+                <!-- Optional Filters -->
                 <div class="filter-section">
-                    <h3>Optional Filters</h3>
+                    <h3>🔍 Optional Filters</h3>
                     
                     <div class="form-group">
-                        <label for="institute_filter">Specific Institute (Optional)</label>
+                        <label for="institute_filter">Specific Institute</label>
                         <select id="institute_filter" name="institute_filter">
                             <option value="all">All Institutes</option>
                             {% for inst in institutes %}
@@ -197,24 +287,27 @@
                         </select>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="program_filter">Specific Program (Optional)</label>
-                        <select id="program_filter" name="program_filter">
-                            <option value="all">All Programs</option>
-                            {% for prog in programs %}
-                            <option value="{{ prog }}">{{ prog }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="degree_filter">Degree Type (Optional)</label>
-                        <select id="degree_filter" name="degree_filter">
-                            <option value="all">All Degrees</option>
-                            {% for deg in degrees %}
-                            <option value="{{ deg }}">{{ deg }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="program_filter">Specific Program</label>
+                            <select id="program_filter" name="program_filter">
+                                <option value="all">All Programs</option>
+                                {% for prog in programs %}
+                                <option value="{{ prog }}">{{ prog }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="state_filter">Prefer Specific State</label>
+                            <select id="state_filter" name="state_filter">
+                                <option value="all">All States</option>
+                                {% for state in available_states %}
+                                <option value="{{ state }}">{{ state }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="help-text">Filter colleges by state location</div>
+                        </div>
                     </div>
                 </div>
                 
@@ -223,7 +316,8 @@
         </div>
         
         <div class="footer">
-            <p>Powered by KareerTrek.com | Based on JEE 2016+ admission data</p>
+            <p>Powered by KareerTrek.com | JEE Advanced & Main Admission Data</p>
+            <p style="font-size: 0.9em; margin-top: 5px;">Predictions based on previous year cutoffs</p>
         </div>
     </div>
 </body>
