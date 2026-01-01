@@ -125,6 +125,12 @@ def predict(request):
         
         print(f"\nPREDICTION - Rank: {rank}, Category: {category}, Gender: {gender}, State: {home_state}")
         
+        # DEBUG: Check what categories exist in the data
+        df = predictor.institutes_data
+        print(f"DEBUG: Available seat_types in data: {df['seat_type'].unique().tolist() if 'seat_type' in df.columns else 'N/A'}")
+        print(f"DEBUG: Total records in dataset: {len(df)}")
+        print(f"DEBUG: Sample of seat_type values: {df['seat_type'].value_counts().head() if 'seat_type' in df.columns else 'N/A'}")
+        
         # Get predictions
         predictions = predictor.predict_colleges(
             rank=rank,
@@ -134,6 +140,33 @@ def predict(request):
             preferences=preferences
         )
         
+        print(f"Results: {len(predictions)} total predictions")
+        
+        # If no predictions found, return helpful debug info
+        if len(predictions) == 0:
+            return JsonResponse({
+                'success': True,
+                'rank': rank,
+                'category': category,
+                'gender': gender,
+                'home_state': home_state,
+                'total_predictions': 0,
+                'predictions': {
+                    'high_chance': [],
+                    'good_chance': [],
+                    'moderate_chance': [],
+                    'low_chance': [],
+                    'all': []
+                },
+                'debug_info': {
+                    'message': 'No matching programs found',
+                    'available_categories': df['seat_type'].unique().tolist() if 'seat_type' in df.columns else [],
+                    'available_genders': df['gender'].unique().tolist() if 'gender' in df.columns else [],
+                    'total_records': len(df),
+                    'suggestion': 'Try using OPEN category or check if the category name matches exactly'
+                }
+            })
+        
         # Categorize predictions
         categorized = {
             'high_chance': [p for p in predictions if p['status'] == 'High Chance'],
@@ -141,8 +174,6 @@ def predict(request):
             'moderate_chance': [p for p in predictions if p['status'] == 'Moderate Chance'],
             'low_chance': [p for p in predictions if p['status'] in ['Low Chance', 'Very Low Chance']],
         }
-        
-        print(f"Results: {len(predictions)} total predictions")
         
         return JsonResponse({
             'success': True,
@@ -178,18 +209,6 @@ def predict(request):
             'error': str(e)
         }, status=500)
 
-def get_unique_values(column):
-    """
-    Helper function to get unique values from institutes data
-    """
-    if predictor and predictor.institutes_data is not None:
-        try:
-            values = sorted(predictor.institutes_data[column].unique().tolist())
-            return values[:100]
-        except Exception as e:
-            print(f"Error getting unique values for {column}: {e}")
-            return []
-    return []
 
 @require_http_methods(["GET"])
 def get_options(request):
@@ -218,9 +237,7 @@ def get_options(request):
         'categories': ['OPEN', 'OBC-NCL', 'SC', 'ST', 'EWS', 'OPEN (PwD)', 
                       'OBC-NCL (PwD)', 'SC (PwD)', 'ST (PwD)', 'EWS (PwD)'],
         'genders': ['Male', 'Female'],
-        'states': sorted(indian_states),
-        'institutes': get_unique_values('institute'),
-        'available_states': sorted(predictor.institutes_data['institute_state'].unique().tolist()),
+        'states': sorted(indian_states)
     })
 
 
@@ -235,3 +252,41 @@ def health(request):
         'model_loaded': predictor is not None,
         'data_available': predictor.institutes_data is not None if predictor else False
     })
+
+
+@require_http_methods(["GET"])
+def debug_data(request):
+    """
+    Debug endpoint to inspect the dataset
+    GET /api/debug/
+    """
+    if not predictor or predictor.institutes_data is None:
+        return JsonResponse({
+            'success': False,
+            'error': 'Model not loaded'
+        }, status=500)
+    
+    df = predictor.institutes_data
+    
+    debug_info = {
+        'success': True,
+        'total_records': len(df),
+        'columns': df.columns.tolist(),
+        'sample_data': df.head(5).to_dict('records'),
+        'unique_values': {}
+    }
+    
+    # Get unique values for important columns
+    important_cols = ['seat_type', 'gender', 'quota', 'institute_state']
+    for col in important_cols:
+        if col in df.columns:
+            debug_info['unique_values'][col] = {
+                'count': df[col].nunique(),
+                'values': df[col].unique().tolist()[:20]
+            }
+    
+    # Get value counts for seat_type
+    if 'seat_type' in df.columns:
+        debug_info['seat_type_distribution'] = df['seat_type'].value_counts().head(10).to_dict()
+    
+    return JsonResponse(debug_info)
