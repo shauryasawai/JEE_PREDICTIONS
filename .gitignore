@@ -1,10 +1,5 @@
 /my_env
-/data
 __pycache__/
 .env
 /credentials
 *.sqlite3
-data/
-data
-/data
-*.pkl
