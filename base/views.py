@@ -10,6 +10,7 @@ import requests
 from io import BytesIO
 from functools import lru_cache
 from .jee_predictor import JEEPredictorV2
+from pathlib import Path
 
 # Suppress sklearn warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
@@ -23,36 +24,60 @@ MODEL_URL = os.environ.get(
     "https://github.com/shauryasawai/JEE_PREDICTIONS/releases/download/v1.0.0-JEE_prediction/jee_predictor_v2.pkl"
 )
 
-MODEL_PATH = "jee_predictor_v2.pkl"
+# Local storage path
+LOCAL_MODEL_DIR = Path("models")
+LOCAL_MODEL_PATH = LOCAL_MODEL_DIR / "jee_predictor_v2.pkl"
+
+def ensure_model_directory():
+    """Create models directory if it doesn't exist"""
+    LOCAL_MODEL_DIR.mkdir(exist_ok=True)
 
 @lru_cache(maxsize=1)
 def download_and_load_model():
     """
-    Download model from GitHub release and cache it in memory
+    Download model from GitHub release, save locally, and cache it in memory
     """
     try:
-        print(f"Downloading model from: {MODEL_URL}")
+        ensure_model_directory()
+        
+        # Check if model exists locally
+        if LOCAL_MODEL_PATH.exists():
+            print(f"Loading model from local storage: {LOCAL_MODEL_PATH}")
+            model_data = joblib.load(LOCAL_MODEL_PATH)
+            print("Model loaded successfully from local storage!")
+            return model_data
+        
+        # Download model if not available locally
+        print(f"Model not found locally. Downloading from: {MODEL_URL}")
         response = requests.get(MODEL_URL, timeout=60)
         response.raise_for_status()
         
-        print("Model downloaded, loading into memory...")
-        model_data = joblib.load(BytesIO(response.content))
+        print("Model downloaded, saving to local storage...")
+        # Save to local file
+        with open(LOCAL_MODEL_PATH, 'wb') as f:
+            f.write(response.content)
+        print(f"Model saved to: {LOCAL_MODEL_PATH}")
+        
+        # Load from local file
+        print("Loading model into memory...")
+        model_data = joblib.load(LOCAL_MODEL_PATH)
         print("Model loaded successfully!")
         return model_data
+        
     except Exception as e:
         print(f"Error loading model: {e}")
         traceback.print_exc()
         raise Exception(f"Failed to load model: {str(e)}")
 
 def load_predictor():
-    """Load the predictor model from external URL"""
+    """Load the predictor model from local storage or external URL"""
     global predictor
     if predictor is None:
         try:
             print("Initializing JEE Predictor V2...")
             predictor = JEEPredictorV2()
             
-            # Download and load model from GitHub
+            # Download and load model (or load from local if available)
             model_data = download_and_load_model()
             
             # Load the model data into predictor
@@ -71,6 +96,22 @@ def load_predictor():
             traceback.print_exc()
             return False
     return True
+
+def clear_local_model():
+    """
+    Utility function to delete local model file 
+    (useful for forcing a re-download)
+    """
+    try:
+        if LOCAL_MODEL_PATH.exists():
+            LOCAL_MODEL_PATH.unlink()
+            print(f"Deleted local model: {LOCAL_MODEL_PATH}")
+            # Clear the cache
+            download_and_load_model.cache_clear()
+            return True
+    except Exception as e:
+        print(f"Error deleting local model: {e}")
+        return False
 
 # Load model on startup
 load_predictor()
