@@ -48,7 +48,7 @@ python manage.py runserver
 
 Check if the API and model are loaded correctly.
 
-**Endpoint:** `GET /api/health/`
+**Endpoint:** `GET /api/health/.`
 
 **Response:**
 ```json
@@ -65,7 +65,7 @@ Check if the API and model are loaded correctly.
 
 Retrieve available categories, genders, and states for the prediction form.
 
-**Endpoint:** `GET /api/options/`
+**Endpoint:** `GET /api/options/.`
 
 **Response:**
 ```json
@@ -101,7 +101,7 @@ Retrieve available categories, genders, and states for the prediction form.
 
 Predict college admission chances based on user inputs.
 
-**Endpoint:** `POST /api/predict/`
+**Endpoint:** `POST /api/predict/.`
 
 **Request Body:**
 ```json
@@ -168,8 +168,8 @@ Predict college admission chances based on user inputs.
 **Prediction Categories:**
 
 - **High Chance** (90-60% confidence): Rank in top 33% of admission range
-- **Good Chance** (60-40% confidence): Rank in middle 33% of admission range
-- **Moderate Chance** (40-20% confidence): Rank in bottom 33% of admission range
+- **Good Chance** (60-40% confidence): Rank in the middle 33% of the admission range
+- **Moderate Chance** (40-20% confidence): Rank in the bottom 33% of the admission range
 - **Low Chance** (<40% confidence): Rank slightly beyond closing rank
 - **Very Low Chance** (<20% confidence): Rank well beyond closing rank
 
@@ -179,7 +179,7 @@ Predict college admission chances based on user inputs.
 
 Inspect the loaded dataset (useful for troubleshooting).
 
-**Endpoint:** `GET /api/debug/`
+**Endpoint:** `GET /api/debug/.`
 
 **Response:**
 ```json
@@ -262,7 +262,7 @@ curl -X POST http://127.0.0.1:8000/api/predict/ \
 
 The system evaluates admission chances based on:
 
-1. **Rank Comparison**: Compares user rank with opening and closing ranks
+1. **Rank Comparison**: Compares the user's rank with the opening and closing ranks
 2. **Quota Filtering**: 
    - All India (AI) quota: Available to all students
    - Home State (HS) quota: Only for students from that state
@@ -314,7 +314,7 @@ The model is trained on historical JEE admission data containing:
 ```json
 {
   "success": false,
-  "error": "Model not loaded"
+  "error": "Model not loaded."
 }
 ```
 
@@ -353,7 +353,7 @@ If no matching programs are found, the API returns debug information:
 
 Add to your Django `urls.py`:
 
-```python
+``` python
 from django.urls import path, include
 
 urlpatterns = [
@@ -363,9 +363,9 @@ urlpatterns = [
 
 ## Limitations
 
-- Predictions are based on historical data and may not reflect current year trends
+- Predictions are based on historical data and may not reflect current-year trends
 - Rank range is limited to 1-500,000
-- Requires stable internet connection for initial model download
+- Requires a stable internet connection for initial model download
 - Model accuracy depends on training data quality and completeness
 
 ## Contributing
@@ -373,7 +373,7 @@ urlpatterns = [
 To improve the model:
 
 1. Add more recent admission data to the training dataset
-2. Retrain the model using `jee_predictor.py`
+2. Retrain the model using `jee_predictor.py.`
 3. Upload the new model to GitHub releases
 4. Update the `MODEL_URL` environment variable
 
