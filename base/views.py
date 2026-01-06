@@ -183,7 +183,7 @@ def predict(request):
         
         print(f"Results: {len(predictions)} total predictions")
         
-        # If no predictions found, return helpful debug info
+        # If no predictions found, return empty string
         if len(predictions) == 0:
             return JsonResponse({
                 'success': True,
@@ -199,13 +199,7 @@ def predict(request):
                     'low_chance': [],
                     'all': []
                 },
-                'debug_info': {
-                    'message': 'No matching programs found',
-                    'available_categories': df['seat_type'].unique().tolist() if 'seat_type' in df.columns else [],
-                    'available_genders': df['gender'].unique().tolist() if 'gender' in df.columns else [],
-                    'total_records': len(df),
-                    'suggestion': 'Try using OPEN category or check if the category name matches exactly'
-                }
+                'message': ''
             })
         
         # Categorize predictions
